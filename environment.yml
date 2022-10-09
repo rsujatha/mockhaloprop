@@ -1,0 +1,13 @@
+name: mock-environment
+channels:
+  - conda-forge
+dependencies:
+  - numpy
+  - psutil
+  - toolz
+  - matplotlib
+  - dill
+  - scipy
+  - partd
+  - bokeh
+  - dask
