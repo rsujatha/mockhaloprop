@@ -1,15 +1,15 @@
 import scipy
 import numpy as np
-import halocorr_with_alpha as h
-import haloproperty_mass as hcm
+#import halocorr_with_alpha as h
+#import haloproperty_mass as hcm
 from scipy.interpolate import interp1d
 import matplotlib.pyplot as plt
-import halo_shape as hs
+#import halo_shape as hs
 import time
-class createmock(hcm.haloproperty_mass,h.halocorr_with_alpha):
+class createmock(object):
 	def __init__(self,mvir,m200b,m200c,alpha,haloprops,k,Tfn,alphaprop=["binned",10],Omega_matter = 0.276,Omega_lambda = 0.724,H_0=70.,ns=0.961, sigma_8 = 0.811 ,Omega_baryon = 0.045,z=0):
-		hcm.haloproperty_mass.__init__(self,mvir=mvir,m200b=m200b,m200c=m200c,k=k,Tfn=Tfn,Omega_matter = Omega_matter,Omega_lambda = Omega_lambda ,H_0=H_0,ns=ns ,sigma_8 = sigma_8 ,Omega_baryon = Omega_baryon)
-		h.halocorr_with_alpha.__init__(self,z=z)
+#		hcm.haloproperty_mass.__init__(self,mvir=mvir,m200b=m200b,m200c=m200c,k=k,Tfn=Tfn,Omega_matter = Omega_matter,Omega_lambda = Omega_lambda ,H_0=H_0,ns=ns ,sigma_8 = sigma_8 ,Omega_baryon = Omega_baryon)
+#		h.halocorr_with_alpha.__init__(self,z=z)
 		self.Nhalo = len(m200b)
 		self.haloprops = haloprops
 		self.m200b = m200b  ## M200b in Msun h^{-1}
@@ -52,7 +52,6 @@ class createmock(hcm.haloproperty_mass,h.halocorr_with_alpha):
 		returns standardised variable
 		"""
 		mean,sigma = self._muSigma()
-		print ('mean and sigma',mean,sigma)
 		return (np.log(self.alpha)-mean)/sigma
 
 	@property
@@ -93,6 +92,9 @@ class createmock(hcm.haloproperty_mass,h.halocorr_with_alpha):
 			C = self.get_lognormal(c,avg_logc(),std_logc())
 		return C
 
-
+	def sample_conditionalP(self,alphat,rho):
+		"""
+		samples the conditional probability distribution p(c|\alpha,m) = N(rhoalpha,(1-rho^2))
+		"""
+		return np.random.normal(loc=rho*alphat,scale=np.sqrt(1-rho**2))
   
-#### it would be good to have a method which gives the distribution of alpha in narrow mass bins
