@@ -39,9 +39,6 @@ class createmock(object):
 			fstd = interp1d(1/2.*(edges[1:]+edges[0:-1]),scatteralpha, kind='cubic',fill_value="extrapolate")
 			mean = fmu(np.log(self.m200b))
 			std = fstd(np.log(self.m200b))
-			print ('needs to be filled currently cubic spline')
-		elif self.returnval == 'fittingfn':
-			print ('needs to be filled')
 		return mean,std
 
 	@property
