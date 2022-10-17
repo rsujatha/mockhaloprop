@@ -7,11 +7,10 @@ import matplotlib.pyplot as plt
 #import halo_shape as hs
 import time
 class createmock(object):
-	def __init__(self,mvir,m200b,m200c,alpha,haloprops,k,Tfn,alphaprop=["binned",10],Omega_matter = 0.276,Omega_lambda = 0.724,H_0=70.,ns=0.961, sigma_8 = 0.811 ,Omega_baryon = 0.045,z=0):
+	def __init__(self,m200b,m200c,alpha,k,Tfn,alphaprop=["binned",10],Omega_matter = 0.276,Omega_lambda = 0.724,H_0=70.,ns=0.961, sigma_8 = 0.811 ,Omega_baryon = 0.045,z=0):
 #		hcm.haloproperty_mass.__init__(self,mvir=mvir,m200b=m200b,m200c=m200c,k=k,Tfn=Tfn,Omega_matter = Omega_matter,Omega_lambda = Omega_lambda ,H_0=H_0,ns=ns ,sigma_8 = sigma_8 ,Omega_baryon = Omega_baryon)
 #		h.halocorr_with_alpha.__init__(self,z=z)
 		self.Nhalo = len(m200b)
-		self.haloprops = haloprops
 		self.m200b = m200b  ## M200b in Msun h^{-1}
 		self.m200c = m200c
 		self.alpha = alpha
