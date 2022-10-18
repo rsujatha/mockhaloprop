@@ -25,16 +25,7 @@ class halocorr_with_alpha(object):
 			for i in range(len(self.ro_c200b['name1'])):
 				rho +=np.log(v.reshape([1,len(v)]))**i*(rhofit[:,i]).reshape([len(rhofit[:,i]),1])
 		return rho
-		
-	def rho_c200c(self,v):
-		"""
-		v is the peakheight		
-		"""
-		vpivot = v-2.05
-		rhofit = self.ro_c200c['name1']
-		rho = (vpivot**3*rhofit[0]+vpivot**2*rhofit[1]+vpivot*rhofit[2]+rhofit[3])
-		return rho
-		
+
 	def rho_beta(self,v,sample_cov=0,sampling=0):
 		"""
 		v is the peakheight		
@@ -48,14 +39,7 @@ class halocorr_with_alpha(object):
 			for i in range(len(self.ro_beta['name1'])):
 				rho +=np.log(v.reshape([1,len(v)]))**i*(rhofit[:,i]).reshape([len(rhofit[:,i]),1])
 		return rho
-		
-	def rho_ellipticity(self,v):
-		"""
-		v is the peakheight
-		"""
-		vpivot = v-2.05
-		rhofit = self.ro_ellipticity['name1']
-		return np.polyval(rhofit,vpivot)
+
 		
 	def rho_vc_to_va(self,v,sample_cov=0,sampling=0):
 		"""
@@ -86,14 +70,7 @@ class halocorr_with_alpha(object):
 				rho +=np.log(v.reshape([1,len(v)]))**i*(rhofit[:,i]).reshape([len(rhofit[:,i]),1])
 		return rho
 		
-	def rho_b_to_a(self,v):
-		"""
-		v is the peakheight		
-		"""
-		vpivot = v-2.05
-		rhofit = self.ro_b_to_a['name1']
-		rho = (vpivot**3*rhofit[0]+vpivot**2*rhofit[1]+vpivot*rhofit[2]+rhofit[3])
-		return rho
+
 		
 	def rho_Spin(self,v,sample_cov=0,sampling=0):
 		"""
@@ -133,3 +110,30 @@ class halocorr_with_alpha(object):
 		"""
 		return np.random.normal(loc=rho*alphat,scale=np.sqrt(1-rho**2))
 
+	def rho_b_to_a(self,v):
+		"""
+		v is the peakheight		
+		"""
+		vpivot = v-2.05
+		rhofit = self.ro_b_to_a['name1']
+		rho = (vpivot**3*rhofit[0]+vpivot**2*rhofit[1]+vpivot*rhofit[2]+rhofit[3])
+		return rho
+
+		
+	def rho_c200c(self,v):
+		"""
+		v is the peakheight		
+		"""
+		vpivot = v-2.05
+		rhofit = self.ro_c200c['name1']
+		rho = (vpivot**3*rhofit[0]+vpivot**2*rhofit[1]+vpivot*rhofit[2]+rhofit[3])
+		return rho
+		
+		
+	def rho_ellipticity(self,v):
+		"""
+		v is the peakheight
+		"""
+		vpivot = v-2.05
+		rhofit = self.ro_ellipticity['name1']
+		return np.polyval(rhofit,vpivot)
