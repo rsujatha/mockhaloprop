@@ -36,6 +36,17 @@ class createmock(object):
 		self.ro_vc_to_va = np.load(absolutepathcab+"/fits/pearson_rho_vc_to_va-alpha.npz")
 		self.ro_beta = np.load(absolutepathcab+"/fits/pearson_rho_beta-alpha.npz")
 		self.ro_Spin = np.load(absolutepathcab+"/fits/pearson_rho_Spin-alpha.npz")
+		
+		self.mu_c_to_a = np.load(absolutepathcab+"/fits/pearson_mu_c_to_a-alpha.npz")
+		self.mu_vc_to_va = np.load(absolutepathcab+"/fits/pearson_mu_vc_to_va-alpha.npz")
+		self.mu_beta = np.load(absolutepathcab+"/fits/pearson_mu_beta-alpha.npz")
+		self.mu_Spin = np.load(absolutepathcab+"/fits/pearson_mu_Spin-alpha.npz")
+		
+		self.sig_c_to_a = np.load(absolutepathcab+"/fits/pearson_sig_c_to_a-alpha.npz")
+		self.sig_vc_to_va = np.load(absolutepathcab+"/fits/pearson_sig_vc_to_va-alpha.npz")
+		self.sig_beta = np.load(absolutepathcab+"/fits/pearson_sig_beta-alpha.npz")
+		self.sig_Spin = np.load(absolutepathcab+"/fits/pearson_sig_Spin-alpha.npz")
+		
 
 		
 	def _muSigma(self):		
