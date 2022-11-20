@@ -31,21 +31,7 @@ class createmock(object):
 		self.rho_c_h2_msun_mpc3 = 2776*1e8    ## in (msun/h)(mpc/h)**3 is the critical density today (ie redshift evolution not included)
 		self.Omega_lambda = Omega_lambda
 		self.delta_c=1.686
-		self.ro_c200b = np.load(absolutepathcab+"/fits/pearson_rho_c200b-alpha.npz")
-		self.ro_c_to_a = np.load(absolutepathcab+"/fits/pearson_rho_c_to_a-alpha.npz")
-		self.ro_vc_to_va = np.load(absolutepathcab+"/fits/pearson_rho_vc_to_va-alpha.npz")
-		self.ro_beta = np.load(absolutepathcab+"/fits/pearson_rho_beta-alpha.npz")
-		self.ro_Spin = np.load(absolutepathcab+"/fits/pearson_rho_Spin-alpha.npz")
 		
-		self.mu_c_to_a = np.load(absolutepathcab+"/fits/pearson_mu_c_to_a-alpha.npz")
-		self.mu_vc_to_va = np.load(absolutepathcab+"/fits/pearson_mu_vc_to_va-alpha.npz")
-		self.mu_beta = np.load(absolutepathcab+"/fits/pearson_mu_beta-alpha.npz")
-		self.mu_Spin = np.load(absolutepathcab+"/fits/pearson_mu_Spin-alpha.npz")
-		
-		self.sig_c_to_a = np.load(absolutepathcab+"/fits/pearson_sig_c_to_a-alpha.npz")
-		self.sig_vc_to_va = np.load(absolutepathcab+"/fits/pearson_sig_vc_to_va-alpha.npz")
-		self.sig_beta = np.load(absolutepathcab+"/fits/pearson_sig_beta-alpha.npz")
-		self.sig_Spin = np.load(absolutepathcab+"/fits/pearson_sig_Spin-alpha.npz")
 		
 
 		
@@ -99,10 +85,26 @@ class createmock(object):
 		return np.exp(c*std_logc+avg_logc)  
 
 	def makemock(self,haloprop):
-		rhoget = getattr(self,'rho_'+haloprop)
-		rho = rhoget(self.nu_peak)
+#		rhoget = getattr(self,'rho_'+haloprop)
+		rho = self.rho_hprop(haloprop,self.nu_peak)
 		begin = time.time()
-		c = self.sample_conditionalP(self.alpha_tilde,rho)
+		C= self.sample_conditionalP(self.alpha_tilde,rho)
+		if haloprop in ['Spin']:
+			muln = self.mu_hprop(haloprop,self.nu_peak)
+			sigln = self.sig_hprop(haloprop,self.nu_peak) 
+			C = self.get_lognormal(C,muln,sigln)
+		elif haloprop in ["c_to_a","vc_to_va"]:
+			mu = self.mu_hprop(haloprop,self.nu_peak)
+			sig = self.sig_hprop(haloprop,self.nu_peak) 
+			C = C*sig + mu
+		elif haloprop in ["beta"]:
+			mu = self.mu_hprop(haloprop,self.nu_peak)
+			sig = self.sig_hprop(haloprop,self.nu_peak)
+			C = 1-np.exp(C*sig + mu)
+		elif haloprop in ["c200b"]:
+			muln = self.lnc200b_DK15(self,z=self.z,m200c=[],mflag=0)
+			sigln = self.siglnc200b_DK15()
+			C = self.get_lognormal(C,muln,sigln)
 #		if len(haloprop)==1:
 #			return c
 #		if haloprop[0] in ['b_to_a','beta','triaxiality','vc_to_va']:
@@ -111,7 +113,7 @@ class createmock(object):
 #			avg_logc = getattr(self,"ln"+haloprop[0]+"_"+haloprop[1])
 #			std_logc = getattr(self,"sigln"+haloprop[0]+"_"+haloprop[2])
 #			C = self.get_lognormal(c,avg_logc(),std_logc())
-		return c
+		return C
 
 	def sample_conditionalP(self,alphat,rho):
 		"""
@@ -119,78 +121,51 @@ class createmock(object):
 		"""
 		return np.random.normal(loc=rho*alphat,scale=np.sqrt(1-rho**2))
   
-	def rho_c200b(self,v,sample_cov=0,sampling=0):
+	def rho_hprop(self,hprop,v,sample_cov=0,sampling=0):
 		"""
 		v is the peakheight		
 		"""
 		if sample_cov ==0:
-			rhofit = self.ro_c200b['name1']
+			roload = np.load(absolutepathcab+"/fits/pearson_rho_"+hprop+"-alpha.npz")
+			rhofit = roload['name1']
 			rho = np.polyval(rhofit[::-1],np.log(v))
 		elif sample_cov==1:
-			rhofit = np.random.multivariate_normal(self.ro_c200b['name1'],self.ro_c200b['name2'],sampling)
+			rhofit = np.random.multivariate_normal(roload['name1'],self.roload['name2'],sampling)
 			rho= 0	
-			for i in range(len(self.ro_c200b['name1'])):
-				rho +=np.log(v.reshape([1,len(v)]))**i*(rhofit[:,i]).reshape([len(rhofit[:,i]),1])
-		return rho
-
-	def rho_beta(self,v,sample_cov=0,sampling=0):
-		"""
-		v is the peakheight		
-		"""
-		if sample_cov ==0:
-			rhofit = self.ro_beta['name1']
-			rho = np.polyval(rhofit[::-1],np.log(v))
-		elif sample_cov==1:
-			rhofit = np.random.multivariate_normal(self.ro_beta['name1'],self.ro_beta['name2'],sampling)
-			rho= 0	
-			for i in range(len(self.ro_beta['name1'])):
-				rho +=np.log(v.reshape([1,len(v)]))**i*(rhofit[:,i]).reshape([len(rhofit[:,i]),1])
-		return rho
-
-		
-	def rho_vc_to_va(self,v,sample_cov=0,sampling=0):
-		"""
-		v is the peakheight		
-		"""
-		if sample_cov ==0:
-			rhofit = self.ro_vc_to_va['name1']
-			rho = np.polyval(rhofit[::-1],np.log(v))
-		elif sample_cov==1:
-			rhofit = np.random.multivariate_normal(self.ro_vc_to_va['name1'],self.ro_vc_to_va['name2'],sampling)
-			rho= 0	
-			for i in range(len(self.ro_vc_to_va['name1'])):
+			for i in range(len(roload['name1'])):
 				rho +=np.log(v.reshape([1,len(v)]))**i*(rhofit[:,i]).reshape([len(rhofit[:,i]),1])
 		return rho
 		
-	def rho_c_to_a(self,v,sample_cov=0,sampling=0):
+	def mu_hprop(self,hprop,v,sample_cov=0,sampling=0):
 		"""
 		v is the peakheight		
 		"""
-		vpivot = v-2.05
 		if sample_cov ==0:
-			rhofit = self.ro_c_to_a['name1']
-			rho = np.polyval(rhofit[::-1],np.log(v))
+			load = np.load(absolutepathcab+"/fits/pearson_mu_"+hprop+"-alpha.npz")
+			rhofit = load['name1']
+			mu = np.polyval(rhofit[::-1],np.log(v))
 		elif sample_cov==1:
-			rhofit = np.random.multivariate_normal(self.ro_c_to_a['name1'],self.ro_c_to_a['name2'],sampling)
-			rho= 0	
-			for i in range(len(self.ro_c_to_a['name1'])):
-				rho +=np.log(v.reshape([1,len(v)]))**i*(rhofit[:,i]).reshape([len(rhofit[:,i]),1])
-		return rho
-		
+			rhofit = np.random.multivariate_normal(load['name1'],self.load['name2'],sampling)
+			mu= 0	
+			for i in range(len(load['name1'])):
+				mu +=np.log(v.reshape([1,len(v)]))**i*(rhofit[:,i]).reshape([len(rhofit[:,i]),1])
+		return mu
 
-	def rho_Spin(self,v,sample_cov=0,sampling=0):
+	def sig_hprop(self,hprop,v,sample_cov=0,sampling=0):
 		"""
 		v is the peakheight		
 		"""
 		if sample_cov ==0:
-			rhofit = self.ro_Spin['name1']
-			rho = np.polyval(rhofit[::-1],np.log(v))
+			load = np.load(absolutepathcab+"/fits/pearson_sig_"+hprop+"-alpha.npz")
+			rhofit = load['name1']
+			sig= np.polyval(rhofit[::-1],np.log(v))
 		elif sample_cov==1:
-			rhofit = np.random.multivariate_normal(self.ro_Spin['name1'],self.ro_Spin['name2'],sampling)
-			rho= 0	
-			for i in range(len(self.ro_Spin['name1'])):
-				rho +=np.log(v.reshape([1,len(v)]))**i*(rhofit[:,i]).reshape([len(rhofit[:,i]),1])
-		return rho
+			rhofit = np.random.multivariate_normal(load['name1'],self.load['name2'],sampling)
+			sig= 0	
+			for i in range(len(load['name1'])):
+				sig +=np.log(v.reshape([1,len(v)]))**i*(rhofit[:,i]).reshape([len(rhofit[:,i]),1])
+		return sig
+
 
 	def PeakHeight(self,mass,k,Tfn,z):
 		"""
@@ -242,3 +217,59 @@ class createmock(object):
 		Fourier Transform of a Spherical Top Hat Filter
 		"""
 		return 3/(k*R)**3*(np.sin(k*R)-(k*R)*np.cos(k*R))
+
+	def lnc200b_DK15(self,z=0,m200c=[],mflag=0):
+		"""
+		Inputs m200c?
+		"""
+		if len(m200c)==0:
+			c200c = self.cmz_CDM_DK15(self.m200c,z)
+		else:
+			c200c = self.cmz_CDM_DK15(m200c,z)
+		Deltaref = 200*self.E(z)**2/(self.Omega_matter*(1+z)**3)
+		print ('deltaref',Deltaref)
+		Delta = 200
+		if mflag==0:
+			return np.log(self.cDelta(c200c,Deltaref,Delta)) 
+		elif mflag==1:
+			c200b = (self.cDelta(c200c,Deltaref,Delta)) 
+			m200b = self.MDelta(m200c,c200b,Deltaref,Delta)
+			return np.log(c200b),m200b
+
+	def cDelta(self,cref,Deltaref,Delta):
+		""" Convert from c_ref to c_Delta using HK03 prescription. Delta is what multiplies rho_b (not rho_crit)."""
+		fDelta = Delta/Deltaref*self.f_nfw(cref)
+		out = self.c_hk03(fDelta)
+		return out
+    # ~ ############################################################
+    # ~ ############################################################
+	def MDelta(self,Mref,cref,Deltaref,Delta):
+		""" Convert from M_ref,c_ref to M_Delta using HK03 prescription. Delta is what multiplies rho_b (not rho_crit)."""
+		out = (self.cDelta(cref,Deltaref,Delta)/cref)**3
+		out *= (Mref*(Delta/Deltaref))
+		return out
+
+	def cmz_CDM_DK15(self,m,z):
+		""" Fitting function c(nu(m),z) from Diemer&Kravtsov15 arXiv:1407.4730.
+		"""
+		nspec = self.calc_nspec_DK15(m)
+		nu = self.PeakHeight(m,self.k,self.Tfn,z)	
+		out = self.cnuz_CDM_DK15(nu,z,nspec)
+		return out
+
+	def siglnc200b_DK15(self):
+		sigma_lnc = np.ones(np.size(self.m200b))*0.16*np.log(10)
+		return sigma_lnc
+		
+	def E(self,z,ok=0):
+		"""
+		seems like H/H_0 need to confirm
+		"""
+		a = 1./(1.+z)
+		# ~ return self.H_0*(self.Omega_matter*a**(-3) + self.Omega_lambda + ok*(a)**(-2)+(1-self.Omega_lambda-self.Omega_matter)*a**(-4))**(1/2)
+		if ok==0:
+			# ~ return self.H_0*(self.Omega_matter*a**(-3) + (1-self.Omega_matter-9.23640e-5)+(9.23640e-5)*a**(-4))**(1/2)
+			return (self.Omega_matter*a**(-3) + (self.Omega_lambda))**(1/2)
+		else:
+			return (self.Omega_matter*a**(-3) + (1-self.Omega_matter-ok-8e-5) + ok*(a)**(-2)+(8e-5)*a**(-4))**(1/2)
+
