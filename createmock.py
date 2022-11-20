@@ -99,19 +99,19 @@ class createmock(object):
 		return np.exp(c*std_logc+avg_logc)  
 
 	def makemock(self,haloprop):
-		rhoget = getattr(self,'rho_'+haloprop[0])
+		rhoget = getattr(self,'rho_'+haloprop)
 		rho = rhoget(self.nu_peak)
 		begin = time.time()
 		c = self.sample_conditionalP(self.alpha_tilde,rho)
-		if len(haloprop)==1:
-			return c
-		if haloprop[0] in ['b_to_a','beta','triaxiality','vc_to_va']:
-			print ("needs tddo be filled")
-		elif haloprop[0] in ['Spin','c200b']:
-			avg_logc = getattr(self,"ln"+haloprop[0]+"_"+haloprop[1])
-			std_logc = getattr(self,"sigln"+haloprop[0]+"_"+haloprop[2])
-			C = self.get_lognormal(c,avg_logc(),std_logc())
-		return C
+#		if len(haloprop)==1:
+#			return c
+#		if haloprop[0] in ['b_to_a','beta','triaxiality','vc_to_va']:
+#			print ("needs tddo be filled")
+#		elif haloprop[0] in ['Spin','c200b']:
+#			avg_logc = getattr(self,"ln"+haloprop[0]+"_"+haloprop[1])
+#			std_logc = getattr(self,"sigln"+haloprop[0]+"_"+haloprop[2])
+#			C = self.get_lognormal(c,avg_logc(),std_logc())
+		return c
 
 	def sample_conditionalP(self,alphat,rho):
 		"""
