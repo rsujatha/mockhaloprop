@@ -90,17 +90,13 @@ class createmock(object):
 	def makemock(self,haloprop):
 		rhoget = getattr(self,'rho_'+haloprop[0])
 		rho = rhoget(self.nu_peak)
-		print ('rhomax',rho.max(),'rhomin',rho.min())
-		print ('alphamaxmin',self.alpha.max(),self.alpha.min())
 		begin = time.time()
 		c = self.sample_conditionalP(self.alpha_tilde,rho)
-		print (time.time()-begin)
-		print ('c',c)
 		if len(haloprop)==1:
 			return c
 		if haloprop[0] in ['b_to_a','beta','triaxiality','vc_to_va']:
 			print ("needs tddo be filled")
-		elif haloprop[0] in ['Spin','spin_bullock','c200b','c200c','c_to_a']:
+		elif haloprop[0] in ['Spin','c200b']:
 			avg_logc = getattr(self,"ln"+haloprop[0]+"_"+haloprop[1])
 			std_logc = getattr(self,"sigln"+haloprop[0]+"_"+haloprop[2])
 			C = self.get_lognormal(c,avg_logc(),std_logc())
