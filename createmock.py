@@ -31,7 +31,7 @@ class createmock(object):
 		self.rho_c_h2_msun_mpc3 = 2776*1e8    ## in (msun/h)(mpc/h)**3 is the critical density today (ie redshift evolution not included)
 		self.Omega_lambda = Omega_lambda
 		self.delta_c=1.686
-		
+		self.Dlin = self.k**3*self.PS(self.k,0,self.Tfn)/(2*np.pi**2)
 		
 
 		
@@ -102,17 +102,9 @@ class createmock(object):
 			sig = self.sig_hprop(haloprop,self.nu_peak)
 			C = 1-np.exp(C*sig + mu)
 		elif haloprop in ["c200b"]:
-			muln = self.lnc200b_DK15(self,z=self.z,m200c=[],mflag=0)
+			muln = self.lnc200b_DK15(z=self.z,m200c=[],mflag=0)
 			sigln = self.siglnc200b_DK15()
 			C = self.get_lognormal(C,muln,sigln)
-#		if len(haloprop)==1:
-#			return c
-#		if haloprop[0] in ['b_to_a','beta','triaxiality','vc_to_va']:
-#			print ("needs tddo be filled")
-#		elif haloprop[0] in ['Spin','c200b']:
-#			avg_logc = getattr(self,"ln"+haloprop[0]+"_"+haloprop[1])
-#			std_logc = getattr(self,"sigln"+haloprop[0]+"_"+haloprop[2])
-#			C = self.get_lognormal(c,avg_logc(),std_logc())
 		return C
 
 	def sample_conditionalP(self,alphat,rho):
@@ -260,7 +252,59 @@ class createmock(object):
 	def siglnc200b_DK15(self):
 		sigma_lnc = np.ones(np.size(self.m200b))*0.16*np.log(10)
 		return sigma_lnc
-		
+
+	def calc_nspec_DK15(self,m):
+		""" Convenience function for calculating local slope of
+			power spectrum, as defined by Diemr&Kravtsov15 arXiv:1407.4730.
+		"""
+		kappa = 0.69
+		RLag = (3*m/(4*np.pi*self.Omega_matter*self.rho_c_h2_msun_mpc3))**(1/3.)
+		keval = kappa*2*np.pi/RLag
+		if np.isscalar(keval):
+			ind = np.where(self.k >= keval)[0][0]
+			dlnk2 = np.log(self.k[ind+1]/self.k[ind-1])
+			nspec = np.log(self.Dlin[ind+1]/self.Dlin[ind-1])/(dlnk2)
+			nspec -= 3.
+		else:
+			nspec = np.ones(keval.size,dtype=float)
+			for k in range(keval.size):
+				ind = np.where(self.k >= keval[k])[0][0]
+				dlnk2 = np.log(self.k[ind+1]/self.k[ind-1])
+				nspec[k] = np.log(self.Dlin[ind+1]/self.Dlin[ind-1])/(dlnk2)
+				nspec[k] -= 3.
+		return nspec
+
+	def cnuz_CDM_DK15(self,nu,z,nspec):
+		"""
+		Fitting function c(nu,z) [median] from Diemer&Kravtsov15 arXiv:1407.4730.
+		"""
+		phi0 = 6.58
+		phi1 = 1.37
+		eta0 = 6.82
+		eta1 = 1.42
+		alpha = 1.12
+		beta = 1.69
+		cmin = phi0 + phi1*nspec
+		numin = eta0 + eta1*nspec
+		out = 0.5*cmin*((nu/numin)**(-alpha) + (nu/numin)**beta)
+		return out
+
+	def f_nfw(self,c):
+		""" Convenience function for NFW normalisation. """
+		out = (np.log(1+c)-c/(1+c))/c**3
+		return out
+
+	def c_hk03(self,f):
+		""" Inverse of f_nfw(c) from Hu & Kravtsov (2003)."""
+		lnf = np.log(f)
+		a1 = 0.5116
+		a2 = -0.4283
+		a3 = -3.13e-3
+		a4 = -3.52e-5
+		p = a2 + a3*lnf + a4*(lnf)**2
+		out = 1.0/(2*f + 1.0/np.sqrt(0.5625 + a1*f**(2*p)))
+		return out
+				
 	def E(self,z,ok=0):
 		"""
 		seems like H/H_0 need to confirm
