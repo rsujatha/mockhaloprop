@@ -1,4 +1,3 @@
-[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/rsujatha/mockhaloprop/main?labpath=%2Fdemo_jupyternb%2Fdemo.ipynb)
 # Description
 
 This repository contains codes and fits to assign mock properties to poorly resolved haloes.
