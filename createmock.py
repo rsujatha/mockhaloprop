@@ -219,7 +219,6 @@ class createmock(object):
 		else:
 			c200c = self.cmz_CDM_DK15(m200c,z)
 		Deltaref = 200*self.E(z)**2/(self.Omega_matter*(1+z)**3)
-		print ('deltaref',Deltaref)
 		Delta = 200
 		if mflag==0:
 			return np.log(self.cDelta(c200c,Deltaref,Delta)) 
