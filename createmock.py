@@ -84,7 +84,7 @@ class createmock(object):
 		"""
 		return np.exp(c*std_logc+avg_logc)  
 
-	def makemock(self,haloprop):
+	def makemock(self,haloprop,fast=False):
 #		rhoget = getattr(self,'rho_'+haloprop)
 		rho = self.rho_hprop(haloprop,self.nu_peak)
 		begin = time.time()
@@ -102,8 +102,15 @@ class createmock(object):
 			sig = self.sig_hprop(haloprop,self.nu_peak)
 			C = 1-np.exp(C*sig + mu)
 		elif haloprop in ["c200b"]:
-			muln = self.lnc200b_DK15(z=self.z,m200c=[],mflag=0)
-			sigln = self.siglnc200b_DK15()
+			if fast==False:
+				muln = self.lnc200b_DK15(z=self.z,m200c=[],mflag=0)
+				sigln = self.siglnc200b_DK15()
+			elif fast==True:
+				m200c_grid = np.logspace(np.log10(self.m200c.min()),np.log10(self.m200c.max()),100)
+				muln_intpol = self.lnc200b_DK15(z=self.z,m200c=m200c_grid)
+				f = interp1d(m200c_grid, muln_intpol,fill_value='extrapolate')
+				muln = f(self.m200b)
+				sigln = self.siglnc200b_DK15()
 			C = self.get_lognormal(C,muln,sigln)
 		return C
 
